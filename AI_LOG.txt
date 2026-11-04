@@ -1,0 +1,13 @@
+AI USAGE LOG
+
+**Project:** Shadow Slayer  
+**Tool:** ChatGPT (OpenAI)
+
+**1. Programming Assistance**  
+AI was used to explain Unity C# concepts, provide code examples, and help troubleshoot technical issues during development.
+
+**2. Project Documentation**  
+AI assisted with structuring the Game Design Document (GDD) and preparing project documentation.
+
+**3. Development Process**  
+The game was assembled, configured, and tested manually in Unity. AI suggestions were reviewed and adapted during development.
