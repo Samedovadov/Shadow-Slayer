@@ -13,27 +13,11 @@ public class ChargerAI : MonoBehaviour
     }
 
     [Header("References")]
+    public EnemyData enemyData;
     public Transform player;
     public Transform waypointA;
     public Transform waypointB;
     public Transform groundCheck;
-
-    [Header("Movement")]
-    public float patrolSpeed = 1.5f;
-    public float chaseSpeed = 2.5f;
-    public float chargeSpeed = 9f;
-    public float waypointTolerance = 0.15f;
-
-    [Header("Detection")]
-    public float detectionRange = 4f;
-    public float detectionHeight = 1.5f;
-    public float attackRange = 2f;
-
-    [Header("Attack")]
-    public int attackDamage = 1;
-    public float windUpTime = 0.6f;
-    public float chargeDuration = 0.35f;
-    public float recoveryTime = 1.5f;
 
     [Header("Ground and Walls")]
     public LayerMask groundLayer;
@@ -67,6 +51,13 @@ public class ChargerAI : MonoBehaviour
         animator = GetComponent<Animator>();
         mainCamera = Camera.main;
 
+        if (enemyData == null)
+        {
+            Debug.LogError("ChargerAI: EnemyData is not assigned!", this);
+            enabled = false;
+            return;
+        }
+
         if (spriteRenderer != null)
             normalColor = spriteRenderer.color;
 
@@ -87,14 +78,10 @@ public class ChargerAI : MonoBehaviour
         }
 
         if (waypointA == null || waypointB == null)
-        {
             Debug.LogWarning("Charger waypoints are missing!");
-        }
 
         if (groundCheck == null)
-        {
             Debug.LogWarning("Charger GroundCheck is missing!");
-        }
 
         ChangeState(ChargerState.Patrol);
     }
@@ -125,33 +112,31 @@ public class ChargerAI : MonoBehaviour
                 break;
 
             case ChargerState.WindUp:
-                if (!CanDetectPlayer() ||
-                    !IsPlayerInAttackRange())
+                if (!CanDetectPlayer() || !IsPlayerInAttackRange())
                 {
                     ChangeState(ChargerState.Patrol);
                 }
-                else if (stateTimer >= windUpTime)
+                else if (stateTimer >= enemyData.windUpTime)
                 {
                     chargeDirection =
                         player.position.x >= transform.position.x
                         ? 1f : -1f;
 
                     FaceDirection(chargeDirection);
-
                     ChangeState(ChargerState.Charge);
                 }
                 break;
 
             case ChargerState.Charge:
                 if (!IsOnScreen(transform.position) ||
-                    stateTimer >= chargeDuration)
+                    stateTimer >= enemyData.chargeDuration)
                 {
                     ChangeState(ChargerState.Recovery);
                 }
                 break;
 
             case ChargerState.Recovery:
-                if (stateTimer >= recoveryTime)
+                if (stateTimer >= enemyData.recoveryTime)
                     ChangeState(ChargerState.Patrol);
                 break;
         }
@@ -182,10 +167,9 @@ public class ChargerAI : MonoBehaviour
 
         Transform target = goingToB ? waypointB : waypointA;
 
-        float difference =
-            target.position.x - rb.position.x;
+        float difference = target.position.x - rb.position.x;
 
-        if (Mathf.Abs(difference) <= waypointTolerance)
+        if (Mathf.Abs(difference) <= enemyData.waypointTolerance)
         {
             goingToB = !goingToB;
             return;
@@ -194,7 +178,7 @@ public class ChargerAI : MonoBehaviour
         float direction = Mathf.Sign(difference);
 
         FaceDirection(direction);
-        MoveHorizontal(direction, patrolSpeed);
+        MoveHorizontal(direction, enemyData.speed);
     }
 
     void Chase()
@@ -202,8 +186,7 @@ public class ChargerAI : MonoBehaviour
         if (player == null)
             return;
 
-        float difference =
-            player.position.x - rb.position.x;
+        float difference = player.position.x - rb.position.x;
 
         if (Mathf.Abs(difference) < 0.2f)
             return;
@@ -211,7 +194,7 @@ public class ChargerAI : MonoBehaviour
         float direction = Mathf.Sign(difference);
 
         FaceDirection(direction);
-        MoveHorizontal(direction, chaseSpeed);
+        MoveHorizontal(direction, enemyData.chaseSpeed);
     }
 
     void Charge()
@@ -219,7 +202,7 @@ public class ChargerAI : MonoBehaviour
         FaceDirection(chargeDirection);
 
         bool moved =
-            MoveHorizontal(chargeDirection, chargeSpeed);
+            MoveHorizontal(chargeDirection, enemyData.chargeSpeed);
 
         if (!moved)
             ChangeState(ChargerState.Recovery);
@@ -296,10 +279,10 @@ public class ChargerAI : MonoBehaviour
         float heightDifference =
             Mathf.Abs(transform.position.y - player.position.y);
 
-        if (distance > detectionRange)
+        if (distance > enemyData.detectionRange)
             return false;
 
-        if (heightDifference > detectionHeight)
+        if (heightDifference > enemyData.detectionHeight)
             return false;
 
         if (!IsOnScreen(transform.position))
@@ -322,8 +305,8 @@ public class ChargerAI : MonoBehaviour
         float verticalDistance =
             Mathf.Abs(player.position.y - transform.position.y);
 
-        return horizontalDistance <= attackRange &&
-               verticalDistance <= detectionHeight &&
+        return horizontalDistance <= enemyData.attackRange &&
+               verticalDistance <= enemyData.detectionHeight &&
                IsOnScreen(transform.position) &&
                IsOnScreen(player.position);
     }
@@ -423,7 +406,7 @@ public class ChargerAI : MonoBehaviour
 
         hasHitPlayer = true;
 
-        health.TakeDamage(attackDamage);
+        health.TakeDamage(enemyData.attackDamage);
 
         Debug.Log("Charger hit player!");
     }

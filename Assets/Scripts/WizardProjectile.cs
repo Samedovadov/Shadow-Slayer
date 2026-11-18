@@ -10,6 +10,12 @@ public class WizardProjectile : MonoBehaviour
     [Header("Collision")]
     public LayerMask groundLayer;
 
+    public void Initialize(int newDamage, float newLifetime)
+    {
+        damage = newDamage;
+        lifetime = newLifetime;
+    }
+
     void Start()
     {
         Destroy(gameObject, lifetime);

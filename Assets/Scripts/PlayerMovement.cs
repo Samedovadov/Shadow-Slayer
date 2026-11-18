@@ -5,6 +5,10 @@ using TMPro;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Data")]
+    public PlayerData playerData;
+    public LevelData levelData;
+
     [Header("Movement")]
     public float speed = 7f;
     public float jumpForce = 12f;
@@ -19,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
     public float attackRadius = 0.7f;
     public LayerMask enemyLayer;
     public float attackCooldown = 0.8f;
+    public int attackDamage = 1;
 
     [Header("Collectibles")]
     public TMP_Text crystalText;
@@ -27,6 +32,7 @@ public class PlayerMovement : MonoBehaviour
     public AudioClip swordSound;
 
     private int crystals = 0;
+    public int Crystals => crystals;
 
     private Rigidbody2D rb;
     private Animator animator;
@@ -43,6 +49,32 @@ public class PlayerMovement : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         audioSource = GetComponent<AudioSource>();
+
+        if (playerData != null)
+        {
+            speed = playerData.speed;
+            jumpForce = playerData.jumpForce;
+            groundCheckRadius = playerData.groundCheckRadius;
+            attackRadius = playerData.attackRadius;
+            attackCooldown = playerData.attackCooldown;
+            attackDamage = playerData.attackDamage;
+        }
+        else
+        {
+            Debug.LogError("PlayerData is not assigned!");
+        }
+
+        if (levelData != null)
+        {
+            transform.position = levelData.playerSpawnPosition;
+        }
+        else
+        {
+            Debug.LogWarning("LevelData is not assigned to Player!");
+        }
+
+        SaveData data = SaveSystem.Load();
+        SetCrystals(data.savedCrystals);
     }
 
     void Update()
@@ -139,7 +171,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (skeleton != null)
             {
-                skeleton.TakeDamage(1);
+                skeleton.TakeDamage(attackDamage);
             }
 
             BossHealth boss =
@@ -147,7 +179,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (boss != null)
             {
-                boss.TakeDamage(1);
+                boss.TakeDamage(attackDamage);
             }
         }
     }
@@ -155,7 +187,25 @@ public class PlayerMovement : MonoBehaviour
     public void CollectCrystal()
     {
         crystals++;
+        UpdateCrystalUI();
+        SavePlayerData();
+    }
 
+    public void SetCrystals(int amount)
+    {
+        crystals = Mathf.Max(0, amount);
+        UpdateCrystalUI();
+    }
+
+    void SavePlayerData()
+    {
+        SaveData data = SaveSystem.Load();
+        data.savedCrystals = crystals;
+        SaveSystem.Save(data);
+    }
+
+    void UpdateCrystalUI()
+    {
         if (crystalText != null)
         {
             crystalText.text = "Crystals: " + crystals;
