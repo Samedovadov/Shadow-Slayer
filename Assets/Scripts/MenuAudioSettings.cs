@@ -19,17 +19,11 @@ public class MenuAudioSettings : MonoBehaviour
 
     void Start()
     {
-        musicSlider.SetValueWithoutNotify(
-            PlayerPrefs.GetFloat("MusicVolume", 0.6f)
-        );
+        SaveData data = SaveSystem.Load();
 
-        sfxSlider.SetValueWithoutNotify(
-            PlayerPrefs.GetFloat("SFXVolume", 0.8f)
-        );
-
-        muteToggle.SetIsOnWithoutNotify(
-            PlayerPrefs.GetInt("MuteAll", 0) == 1
-        );
+        musicSlider.SetValueWithoutNotify(data.musicVolume);
+        sfxSlider.SetValueWithoutNotify(data.sfxVolume);
+        muteToggle.SetIsOnWithoutNotify(data.muteAll);
 
         musicSlider.onValueChanged.AddListener(OnVolumeChanged);
         sfxSlider.onValueChanged.AddListener(OnVolumeChanged);
@@ -44,11 +38,13 @@ public class MenuAudioSettings : MonoBehaviour
     void OnVolumeChanged(float value)
     {
         ApplyVolume();
+        SaveSettings();
     }
 
     void OnMuteChanged(bool value)
     {
         ApplyVolume();
+        SaveSettings();
     }
 
     void ApplyVolume()
@@ -66,6 +62,17 @@ public class MenuAudioSettings : MonoBehaviour
         mixer.SetFloat("SFXVolume", sfxDB);
     }
 
+    void SaveSettings()
+    {
+        SaveData data = SaveSystem.Load();
+
+        data.musicVolume = musicSlider.value;
+        data.sfxVolume = sfxSlider.value;
+        data.muteAll = muteToggle.isOn;
+
+        SaveSystem.Save(data);
+    }
+
     public void OpenSettings()
     {
         mainMenuContent.SetActive(false);
@@ -74,11 +81,7 @@ public class MenuAudioSettings : MonoBehaviour
 
     public void CloseSettings()
     {
-        PlayerPrefs.SetFloat("MusicVolume", musicSlider.value);
-        PlayerPrefs.SetFloat("SFXVolume", sfxSlider.value);
-        PlayerPrefs.SetInt("MuteAll", muteToggle.isOn ? 1 : 0);
-
-        PlayerPrefs.Save();
+        SaveSettings();
 
         settingsPanel.SetActive(false);
         mainMenuContent.SetActive(true);

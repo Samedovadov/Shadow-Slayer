@@ -3,21 +3,36 @@ using UnityEngine;
 
 public class HealthPickup : MonoBehaviour
 {
-    public int healAmount = 1;
+    [Header("Item Data")]
+    public ItemData itemData;
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Touched: " + other.name);
+        if (!other.CompareTag("Player"))
+            return;
 
-        if (other.CompareTag("Player"))
+        if (itemData == null)
         {
-            PlayerHealth player = other.GetComponent<PlayerHealth>();
+            Debug.LogError("HealthPickup: ItemData is missing!", this);
+            return;
+        }
 
-            if (player != null && player.hp < 3)
-            {
-                player.Heal(healAmount);
-                Destroy(gameObject);
-            }
+        if (itemData.itemType != ItemType.Health)
+        {
+            Debug.LogError("HealthPickup: Wrong ItemData type!", this);
+            return;
+        }
+
+        PlayerHealth player =
+            other.GetComponent<PlayerHealth>();
+
+        if (player == null)
+            return;
+
+        if (player.hp < 3)
+        {
+            player.Heal(itemData.amount);
+            Destroy(gameObject);
         }
     }
 }

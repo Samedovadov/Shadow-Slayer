@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour
 {
-    [Header("Health")]
-    public int maxHealth = 3;
+    [Header("Data")]
+    public EnemyData enemyData;
 
     [Header("Audio")]
     public AudioClip hitSound;
@@ -15,17 +15,45 @@ public class EnemyHealth : MonoBehaviour
     private Animator animator;
     private AudioSource audioSource;
 
+    private int MaxHealth => enemyData != null
+        ? Mathf.Max(1, enemyData.maxHealth)
+        : 3;
+
     void Awake()
     {
-        currentHealth = maxHealth;
-
         sr = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
+
+        if (enemyData == null)
+        {
+            SkeletonPatrol skeleton = GetComponent<SkeletonPatrol>();
+
+            if (skeleton != null)
+            {
+                enemyData = skeleton.enemyData;
+            }
+        }
+
+        if (enemyData == null)
+        {
+            Debug.LogError(
+                "EnemyHealth: EnemyData is not assigned!",
+                this
+            );
+
+            enabled = false;
+            return;
+        }
+
+        currentHealth = MaxHealth;
     }
 
     public void TakeDamage(int damage)
     {
+        if (!enabled || damage <= 0)
+            return;
+
         currentHealth -= damage;
 
         Debug.Log("Skeleton HP: " + currentHealth);
@@ -35,7 +63,10 @@ public class EnemyHealth : MonoBehaviour
             audioSource.PlayOneShot(hitSound);
         }
 
-        sr.color = Color.red;
+        if (sr != null)
+        {
+            sr.color = Color.red;
+        }
 
         if (currentHealth <= 0)
         {
@@ -50,7 +81,11 @@ public class EnemyHealth : MonoBehaviour
     IEnumerator HitEffect()
     {
         yield return new WaitForSeconds(0.2f);
-        sr.color = Color.white;
+
+        if (sr != null)
+        {
+            sr.color = Color.white;
+        }
     }
 
     void OnCollisionEnter2D(Collision2D collision)

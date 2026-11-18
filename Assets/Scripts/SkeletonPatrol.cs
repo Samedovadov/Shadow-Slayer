@@ -12,32 +12,13 @@ public class SkeletonPatrol : MonoBehaviour
         Cooldown
     }
 
-    [Header("Movement")]
-    public float speed = 1.5f;
-    public float chaseSpeed = 2f;
-    public float patrolDistance = 0.7f;
+    [Header("References")]
+    public EnemyData enemyData;
+    public Transform player;
 
     [Header("Vision")]
-    public Transform player;
-    public float visionRange = 4f;
-
-    [Range(0f, 180f)]
-    public float visionAngle = 140f;
-
     public LayerMask obstacleMask;
     public Vector2 eyeOffset = new Vector2(0f, 0.3f);
-
-    [Header("Attack")]
-    public float attackRange = 0.9f;
-    public float attackHeight = 0.8f;
-    public int attackDamage = 1;
-
-    [Range(0.3f, 0.8f)]
-    public float windUpTime = 0.5f;
-
-    public float attackDuration = 0.75f;
-    public float hitDelay = 0.375f;
-    public float cooldownTime = 1.2f;
 
     [Header("Platform Safety")]
     public LayerMask groundMask;
@@ -70,8 +51,21 @@ public class SkeletonPatrol : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
         mainCamera = Camera.main;
 
+        if (enemyData == null)
+        {
+            Debug.LogError(
+                "SkeletonPatrol: EnemyData is not assigned!",
+                this
+            );
+
+            enabled = false;
+            return;
+        }
+
         startX = transform.position.x;
-        normalColor = sr.color;
+
+        if (sr != null)
+            normalColor = sr.color;
 
         if (player == null)
         {
@@ -139,19 +133,17 @@ public class SkeletonPatrol : MonoBehaviour
 
             case EnemyState.Attack:
 
-                // Count time from the start of the animation
                 attackElapsed += Time.deltaTime;
 
-                // Apply damage only once, during the sword swing
                 if (!damageApplied &&
-                    attackElapsed >= hitDelay)
+                    attackElapsed >= enemyData.hitDelay)
                 {
                     PerformAttack();
                     damageApplied = true;
                 }
 
-                // Wait until the attack animation finishes
-                if (attackElapsed >= attackDuration)
+                if (attackElapsed >=
+                    enemyData.skeletonAttackDuration)
                 {
                     ChangeState(EnemyState.Cooldown);
                 }
@@ -177,6 +169,9 @@ public class SkeletonPatrol : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (rb == null || enemyData == null)
+            return;
+
         if (currentState == EnemyState.Patrol)
         {
             Patrol();
@@ -190,12 +185,13 @@ public class SkeletonPatrol : MonoBehaviour
     void Patrol()
     {
         float targetX =
-            startX + patrolDirection * patrolDistance;
+            startX +
+            patrolDirection * enemyData.patrolDistance;
 
         float newX = Mathf.MoveTowards(
             rb.position.x,
             targetX,
-            speed * Time.fixedDeltaTime
+            enemyData.speed * Time.fixedDeltaTime
         );
 
         rb.MovePosition(
@@ -213,7 +209,8 @@ public class SkeletonPatrol : MonoBehaviour
         float difference =
             player.position.x - transform.position.x;
 
-        if (Mathf.Abs(difference) <= attackRange * 0.8f)
+        if (Mathf.Abs(difference) <=
+            enemyData.attackRange * 0.8f)
             return;
 
         int direction = difference > 0f ? 1 : -1;
@@ -223,7 +220,10 @@ public class SkeletonPatrol : MonoBehaviour
         if (groundMask.value != 0)
         {
             Vector2 checkPoint = rb.position +
-                new Vector2(direction * edgeCheckForward, 0f);
+                new Vector2(
+                    direction * edgeCheckForward,
+                    0f
+                );
 
             RaycastHit2D groundHit = Physics2D.Raycast(
                 checkPoint,
@@ -239,7 +239,7 @@ public class SkeletonPatrol : MonoBehaviour
         float newX = Mathf.MoveTowards(
             rb.position.x,
             player.position.x,
-            chaseSpeed * Time.fixedDeltaTime
+            enemyData.chaseSpeed * Time.fixedDeltaTime
         );
 
         rb.MovePosition(
@@ -260,7 +260,12 @@ public class SkeletonPatrol : MonoBehaviour
 
         Vector2 direction = target - origin;
 
-        if (direction.magnitude > visionRange)
+        if (direction.magnitude >
+            enemyData.detectionRange)
+            return false;
+
+        if (Mathf.Abs(direction.y) >
+            enemyData.maxHeightDifference)
             return false;
 
         Vector2 forward =
@@ -271,7 +276,7 @@ public class SkeletonPatrol : MonoBehaviour
             direction
         );
 
-        if (angle > visionAngle / 2f)
+        if (angle > enemyData.visionAngle / 2f)
             return false;
 
         return HasLineOfSight();
@@ -309,8 +314,8 @@ public class SkeletonPatrol : MonoBehaviour
                 player.position.y - transform.position.y
             );
 
-        return horizontalDistance <= attackRange &&
-               verticalDistance <= attackHeight &&
+        return horizontalDistance <= enemyData.attackRange &&
+               verticalDistance <= enemyData.attackHeight &&
                IsOnScreen();
     }
 
@@ -342,7 +347,9 @@ public class SkeletonPatrol : MonoBehaviour
 
         if (health != null)
         {
-            health.TakeDamage(attackDamage);
+            health.TakeDamage(
+                enemyData.attackDamage
+            );
         }
     }
 
@@ -350,19 +357,24 @@ public class SkeletonPatrol : MonoBehaviour
     {
         currentState = newState;
 
-        sr.color = normalColor;
+        if (sr != null)
+            sr.color = normalColor;
 
         if (newState == EnemyState.WindUp)
         {
-            stateTimer = windUpTime;
-            sr.color = Color.yellow;
+            stateTimer =
+                enemyData.skeletonWindUpTime;
+
+            if (sr != null)
+                sr.color = Color.yellow;
         }
         else if (newState == EnemyState.Attack)
         {
             attackElapsed = 0f;
             damageApplied = false;
 
-            sr.color = Color.red;
+            if (sr != null)
+                sr.color = Color.red;
 
             if (animator != null)
             {
@@ -372,7 +384,7 @@ public class SkeletonPatrol : MonoBehaviour
         }
         else if (newState == EnemyState.Cooldown)
         {
-            stateTimer = cooldownTime;
+            stateTimer = enemyData.attackCooldown;
         }
     }
 
@@ -392,21 +404,28 @@ public class SkeletonPatrol : MonoBehaviour
     void FaceDirection(int direction)
     {
         facingDirection = direction;
-        sr.flipX = direction < 0;
+
+        if (sr != null)
+            sr.flipX = direction < 0;
     }
 
     void OnDrawGizmosSelected()
     {
+        if (enemyData == null)
+            return;
+
         Gizmos.color = Color.yellow;
+
         Gizmos.DrawWireSphere(
             transform.position,
-            visionRange
+            enemyData.detectionRange
         );
 
         Gizmos.color = Color.red;
+
         Gizmos.DrawWireSphere(
             transform.position,
-            attackRange
+            enemyData.attackRange
         );
     }
 }

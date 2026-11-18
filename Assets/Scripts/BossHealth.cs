@@ -86,6 +86,19 @@ public class BossHealth : MonoBehaviour
     {
         yield return new WaitForSeconds(1.2f);
 
+        SaveData data = SaveSystem.Load();
+
+        if (!data.completedLevels.Contains(3))
+        {
+            data.completedLevels.Add(3);
+        }
+
+        data.highestUnlockedLevel = Mathf.Max(
+            data.highestUnlockedLevel, 4
+        );
+
+        SaveSystem.Save(data);
+
         if (Application.CanStreamedLevelBeLoaded("WinScene"))
         {
             Debug.Log("Loading WinScene");

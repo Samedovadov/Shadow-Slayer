@@ -13,21 +13,10 @@ public class WizardShooter : MonoBehaviour
     }
 
     [Header("References")]
+    public EnemyData enemyData;
     public Transform player;
     public Transform firePoint;
     public GameObject projectilePrefab;
-
-    [Header("Detection")]
-    public float detectionRange = 5f;
-    public float maxHeightDifference = 2f;
-
-    [Header("Attack Settings")]
-    public float aimTime = 0.3f;
-    public float windUpTime = 0.5f;
-    public float attackDuration = 0.8f;
-    public float shotDelay = 0.4f;
-    public float cooldownTime = 1.2f;
-    public float projectileSpeed = 6f;
 
     [Header("Sprite")]
     public bool spriteFacesRight = false;
@@ -49,6 +38,13 @@ public class WizardShooter : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         mainCamera = Camera.main;
+
+        if (enemyData == null)
+        {
+            Debug.LogError("WizardShooter: EnemyData is not assigned!", this);
+            enabled = false;
+            return;
+        }
 
         if (spriteRenderer != null)
             normalColor = spriteRenderer.color;
@@ -94,7 +90,7 @@ public class WizardShooter : MonoBehaviour
                 {
                     ChangeState(WizardState.Idle);
                 }
-                else if (stateTimer >= aimTime)
+                else if (stateTimer >= enemyData.aimTime)
                 {
                     ChangeState(WizardState.WindUp);
                 }
@@ -105,25 +101,25 @@ public class WizardShooter : MonoBehaviour
                 {
                     ChangeState(WizardState.Idle);
                 }
-                else if (stateTimer >= windUpTime)
+                else if (stateTimer >= enemyData.windUpTime)
                 {
                     ChangeState(WizardState.Attack);
                 }
                 break;
 
             case WizardState.Attack:
-                if (!hasShot && stateTimer >= shotDelay)
+                if (!hasShot && stateTimer >= enemyData.shotDelay)
                 {
                     Shoot();
                     hasShot = true;
                 }
 
-                if (stateTimer >= attackDuration)
+                if (stateTimer >= enemyData.attackDuration)
                     ChangeState(WizardState.Cooldown);
                 break;
 
             case WizardState.Cooldown:
-                if (stateTimer >= cooldownTime)
+                if (stateTimer >= enemyData.cooldownTime)
                     ChangeState(WizardState.Idle);
                 break;
         }
@@ -137,10 +133,10 @@ public class WizardShooter : MonoBehaviour
         float heightDifference =
             Mathf.Abs(transform.position.y - player.position.y);
 
-        if (distance > detectionRange)
+        if (distance > enemyData.detectionRange)
             return false;
 
-        if (heightDifference > maxHeightDifference)
+        if (heightDifference > enemyData.maxHeightDifference)
             return false;
 
         if (mainCamera != null)
@@ -217,6 +213,17 @@ public class WizardShooter : MonoBehaviour
             Quaternion.identity
         );
 
+        WizardProjectile projectileScript =
+            projectile.GetComponent<WizardProjectile>();
+
+        if (projectileScript != null)
+        {
+            projectileScript.Initialize(
+                enemyData.projectileDamage,
+                enemyData.projectileLifetime
+            );
+        }
+
         Vector2 direction =
             ((Vector2)player.position + Vector2.up * 0.2f
             - (Vector2)firePoint.position).normalized;
@@ -229,7 +236,7 @@ public class WizardShooter : MonoBehaviour
         if (projectileRb != null)
         {
             projectileRb.linearVelocity =
-                direction * projectileSpeed;
+                direction * enemyData.projectileSpeed;
         }
 
         Debug.Log("Wizard fired a projectile!");
