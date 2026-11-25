@@ -1,40 +1,56 @@
-
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 
 public class PauseMenu : MonoBehaviour
 {
     public GameObject pausePanel;
 
+    [Header("Audio Snapshots")]
+    [SerializeField] private AudioMixerSnapshot normalSnapshot;
+    [SerializeField] private AudioMixerSnapshot pausedSnapshot;
+
     void Start()
     {
-        Time.timeScale = 1f;
-        pausePanel.SetActive(false);
+        ResumeGame();
     }
 
     public void PauseGame()
     {
+        if (pausedSnapshot != null)
+        {
+            pausedSnapshot.TransitionTo(0f);
+        }
+
         Time.timeScale = 0f;
         pausePanel.SetActive(true);
     }
 
     public void ResumeGame()
     {
-        Time.timeScale = 1f;
+        RestoreNormalAudio();
         pausePanel.SetActive(false);
     }
 
     public void RestartGame()
     {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(
-            SceneManager.GetActiveScene().name
-        );
+        RestoreNormalAudio();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void MainMenu()
     {
-        Time.timeScale = 1f;
+        RestoreNormalAudio();
         SceneManager.LoadScene("MainMenu");
+    }
+
+    private void RestoreNormalAudio()
+    {
+        Time.timeScale = 1f;
+
+        if (normalSnapshot != null)
+        {
+            normalSnapshot.TransitionTo(0f);
+        }
     }
 }
