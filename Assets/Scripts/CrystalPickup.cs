@@ -37,13 +37,7 @@ public class CrystalPickup : MonoBehaviour
             player.CollectCrystal();
         }
 
-        AudioSource audio =
-            other.GetComponent<AudioSource>();
-
-        if (audio != null && pickupSound != null)
-        {
-            audio.PlayOneShot(pickupSound);
-        }
+        SoundEffects.PlayVaried(pickupSound);
 
         Destroy(gameObject);
     }

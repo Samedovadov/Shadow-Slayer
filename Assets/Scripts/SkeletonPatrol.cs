@@ -362,6 +362,7 @@ public class SkeletonPatrol : MonoBehaviour
 
         if (newState == EnemyState.WindUp)
         {
+            SoundEffects.Play(SoundEffects.Cue.WindUp);
             stateTimer =
                 enemyData.skeletonWindUpTime;
 

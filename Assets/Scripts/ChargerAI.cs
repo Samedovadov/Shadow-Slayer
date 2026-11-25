@@ -362,6 +362,7 @@ public class ChargerAI : MonoBehaviour
         switch (newState)
         {
             case ChargerState.WindUp:
+                SoundEffects.Play(SoundEffects.Cue.WindUp);
                 if (spriteRenderer != null)
                     spriteRenderer.color = Color.red;
                 break;

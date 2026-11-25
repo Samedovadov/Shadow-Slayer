@@ -129,6 +129,7 @@ public class PlayerMovement : MonoBehaviour
             );
 
             grounded = false;
+            SoundEffects.Play(SoundEffects.Cue.Jump);
         }
     }
 
@@ -146,7 +147,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (audioSource != null && swordSound != null)
         {
-            audioSource.PlayOneShot(swordSound);
+            SoundEffects.PlayVaried(swordSound, audioSource.volume);
         }
 
         DealDamage();

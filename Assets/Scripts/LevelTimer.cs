@@ -48,6 +48,7 @@ public class LevelTimer : MonoBehaviour
             timeIsOver = true;
             UpdateTimerUI();
 
+            SoundEffects.Play(SoundEffects.Cue.Lose);
             Debug.Log("TIME IS OVER! Restarting level.");
 
             SceneManager.LoadScene(

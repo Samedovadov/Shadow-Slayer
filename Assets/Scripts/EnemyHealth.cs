@@ -13,7 +13,6 @@ public class EnemyHealth : MonoBehaviour
     private int currentHealth;
     private SpriteRenderer sr;
     private Animator animator;
-    private AudioSource audioSource;
 
     private int MaxHealth => enemyData != null
         ? Mathf.Max(1, enemyData.maxHealth)
@@ -23,7 +22,6 @@ public class EnemyHealth : MonoBehaviour
     {
         sr = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
-        audioSource = GetComponent<AudioSource>();
 
         if (enemyData == null)
         {
@@ -58,10 +56,7 @@ public class EnemyHealth : MonoBehaviour
 
         Debug.Log("Skeleton HP: " + currentHealth);
 
-        if (audioSource != null && hitSound != null)
-        {
-            audioSource.PlayOneShot(hitSound);
-        }
+        SoundEffects.PlayVaried(hitSound);
 
         if (sr != null)
         {

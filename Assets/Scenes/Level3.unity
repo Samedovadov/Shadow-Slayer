@@ -1467,6 +1467,7 @@ GameObject:
   - component: {fileID: 598274057}
   - component: {fileID: 598274058}
   - component: {fileID: 598274059}
+  - component: {fileID: 598274060}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1618,7 +1619,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: -4713855178678044471, guid: c623aaedb5fafe641b97133dedacf44b, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: be4acf4d36050da4f84c902490ed36df, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0.2
   m_Pitch: 1
   Loop: 1
@@ -1703,6 +1704,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &598274060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 598274053}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c931763c1e7d0f840b9dc35528208b81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneMusic
 --- !u!1 &647399952
 GameObject:
   m_ObjectHideFlags: 0

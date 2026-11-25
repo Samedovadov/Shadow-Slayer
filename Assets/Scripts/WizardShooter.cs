@@ -189,6 +189,7 @@ public class WizardShooter : MonoBehaviour
         switch (newState)
         {
             case WizardState.WindUp:
+                SoundEffects.Play(SoundEffects.Cue.WindUp);
                 if (spriteRenderer != null)
                     spriteRenderer.color = Color.yellow;
                 break;

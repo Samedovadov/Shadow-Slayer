@@ -35,6 +35,7 @@ public class BossShooter : MonoBehaviour
 
         if (Time.time >= nextAttackTime)
         {
+            SoundEffects.Play(SoundEffects.Cue.WindUp);
             animator.SetTrigger("Attack");
             nextAttackTime = Time.time + attackCooldown;
         }

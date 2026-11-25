@@ -104,7 +104,7 @@ public class PlayerHealth : MonoBehaviour
 
         if (audioSource != null && hurtSound != null)
         {
-            audioSource.PlayOneShot(hurtSound);
+            SoundEffects.PlayVaried(hurtSound, audioSource.volume);
         }
 
         if (hp <= 0)
@@ -145,7 +145,7 @@ public class PlayerHealth : MonoBehaviour
         {
             if (audioSource != null && healSound != null)
             {
-                audioSource.PlayOneShot(healSound);
+                SoundEffects.PlayVaried(healSound, audioSource.volume);
             }
 
             SavePlayerData();
@@ -180,6 +180,7 @@ public class PlayerHealth : MonoBehaviour
             return;
 
         isRestarting = true;
+        SoundEffects.Play(SoundEffects.Cue.Death);
 
         SaveData data = SaveSystem.Load();
 

@@ -49,17 +49,18 @@ public class MenuAudioSettings : MonoBehaviour
 
     void ApplyVolume()
     {
-        float music = muteToggle.isOn ? 0f : musicSlider.value;
-        float sfx = muteToggle.isOn ? 0f : sfxSlider.value;
+        ApplyVolume(mixer, musicSlider.value, sfxSlider.value, muteToggle.isOn);
+    }
 
-        float musicDB = music <= 0.001f
-            ? -80f : Mathf.Log10(music) * 20f;
+    internal static void ApplyVolume(AudioMixer mixer, float music, float sfx, bool mute)
+    {
+        mixer.SetFloat("MusicVolume", ToDecibels(mute ? 0f : music));
+        mixer.SetFloat("SFXVolume", ToDecibels(mute ? 0f : sfx));
+    }
 
-        float sfxDB = sfx <= 0.001f
-            ? -80f : Mathf.Log10(sfx) * 20f;
-
-        mixer.SetFloat("MusicVolume", musicDB);
-        mixer.SetFloat("SFXVolume", sfxDB);
+    private static float ToDecibels(float volume)
+    {
+        return volume <= 0.001f ? -80f : Mathf.Log10(volume) * 20f;
     }
 
     void SaveSettings()
